@@ -1,46 +1,71 @@
 
 import { Inquiry } from '../types/inquiry';
 
-const API_URL = 'http://localhost:5000/api/inquiries';
+// In production, we use the same domain. In development, we use localhost:5000
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+const API_URL = isProduction ? '/api/inquiries' : 'http://localhost:5000/api/inquiries';
+
+const LOCAL_STORAGE_KEY = 'bailan_group_inquiries';
+
+const getLocalInquiries = (): Inquiry[] => {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+  return data ? JSON.parse(data) : [];
+};
+
+const saveLocalInquiry = (inquiry: Inquiry) => {
+  const local = getLocalInquiries();
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...local, inquiry]));
+};
 
 export const inquiryService = {
-  // Sends the form data to the backend server
   saveInquiry: async (data: Omit<Inquiry, 'id' | 'timestamp'>): Promise<Inquiry> => {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to save inquiry to the server');
+    const tempId = Math.random().toString(36).substr(2, 9);
+    const timestamp = Date.now();
+    const fullInquiry: Inquiry = { ...data, id: tempId, timestamp };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) throw new Error('Backend failed');
+      return response.json();
+    } catch (err) {
+      console.warn("Backend offline. Saving lead to browser storage.");
+      saveLocalInquiry(fullInquiry);
+      return fullInquiry;
     }
-    
-    return response.json();
   },
 
-  // Fetches all inquiries from the backend database
   getAllInquiries: async (): Promise<Inquiry[]> => {
+    let serverInquiries: Inquiry[] = [];
     try {
       const response = await fetch(API_URL);
-      if (!response.ok) throw new Error('Could not fetch data');
-      return response.json();
+      if (response.ok) {
+        serverInquiries = await response.json();
+      }
     } catch (error) {
-      console.error("Backend offline? Use 'node server.js' to start it.");
-      return []; // Return empty if server is down
+      console.error("Backend offline. Loading local data only.");
     }
+
+    const localInquiries = getLocalInquiries();
+    const all = [...serverInquiries, ...localInquiries];
+    // Filter duplicates by ID
+    const unique = Array.from(new Map(all.map(item => [item.id, item])).values());
+    return unique.sort((a, b) => b.timestamp - a.timestamp);
   },
 
-  // Tells the backend to remove an inquiry
   deleteInquiry: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to delete inquiry');
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Server delete failed');
+    } catch (err) {
+      const local = getLocalInquiries();
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local.filter(i => i.id !== id)));
     }
   }
 };
