@@ -22,7 +22,7 @@ if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify([]));
 }
 
-// GET all inquiries
+// API: GET all inquiries
 app.get('/api/inquiries', (req, res) => {
   try {
     const data = fs.readFileSync(DB_FILE);
@@ -33,7 +33,7 @@ app.get('/api/inquiries', (req, res) => {
   }
 });
 
-// POST a new inquiry
+// API: POST a new inquiry
 app.post('/api/inquiries', (req, res) => {
   try {
     const newInquiry = {
@@ -53,7 +53,7 @@ app.post('/api/inquiries', (req, res) => {
   }
 });
 
-// DELETE an inquiry
+// API: DELETE an inquiry
 app.delete('/api/inquiries/:id', (req, res) => {
   try {
     const { id } = req.params;
@@ -69,6 +69,17 @@ app.delete('/api/inquiries/:id', (req, res) => {
   }
 });
 
+// FRONTEND: Serve static files from the 'dist' directory (created by npm run build)
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  
+  // Handle React Routing: Send all other requests to index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`Backend server is running on port ${PORT}`);
+  console.log(`Bailan Group system online at port ${PORT}`);
 });
