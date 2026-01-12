@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { inquiryService } from '../services/inquiryService';
 
 const Home: React.FC = () => {
   const [selectedService, setSelectedService] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', details: '' });
 
   const services = [
     { 
@@ -10,27 +14,51 @@ const Home: React.FC = () => {
       desc: "Strategic asset allocation and property management for investors looking for stability and high yield returns.",
       longDesc: "Our Portfolio Management service is designed for high-net-worth individuals who demand institutional-grade oversight of their real estate assets. We treat every property not just as a building, but as a critical component of your wealth legacy.",
       details: ["Tax-efficient restructuring", "Quarterly yield optimization", "International legal compliance", "Maintenance & concierge oversight"],
-      icon: "📈"
+      icon: "📈",
+      color: "#7A2318"
     },
     { 
       title: "Global Search", 
       desc: "Access to off-market listings and exclusive networks worldwide to find the exact property that meets your criteria.",
       longDesc: "Leverage the Bailan Group's global intelligence network. We specialize in sourcing off-market 'quiet listings' that never reach public portals, ensuring you have first-mover advantage on the world's most desirable coordinates.",
       details: ["Bespoke property scouting", "Confidential negotiations", "Cross-border logistics", "Historical asset verification"],
-      icon: "🌍"
+      icon: "🌍",
+      color: "#1A1A1A"
     },
     { 
       title: "Legal Concierge", 
       desc: "Complete administrative and legal support, ensuring your transactions are secure, private, and seamless.",
       longDesc: "Navigation of complex international real estate laws requires precision. Our Legal Concierge team provides a shield of privacy and security, managing everything from title transfers to multi-jurisdictional tax structuring.",
       details: ["Escrow management", "Privacy protection protocols", "Title insurance oversight", "Residency & Visa support"],
-      icon: "⚖️"
+      icon: "⚖️",
+      color: "#4F545A"
     }
   ];
 
   const partners = [
     "ROLEX", "RITZ-CARLTON", "SOTHEBY'S", "GULFSTREAM", "ASTON MARTIN", "NETJETS", "BENTLEY", "FOUR SEASONS"
   ];
+
+  const handleServiceRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedService === null) return;
+    setIsSubmitting(true);
+    try {
+      await inquiryService.saveInquiry({
+        firstName: formData.name,
+        lastName: `(Service: ${services[selectedService].title})`,
+        email: formData.email,
+        type: 'Service Request',
+        message: `Inquiry for ${services[selectedService].title}. Additional details: ${formData.details}`
+      });
+      setIsSuccess(true);
+      setFormData({ name: '', email: '', details: '' });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="bg-white overflow-hidden">
@@ -146,74 +174,144 @@ const Home: React.FC = () => {
                 <h3 className="text-2xl font-black text-gray-900 mb-6 tracking-tight group-hover:text-[#7A2318] transition-colors">{service.title}</h3>
                 <p className="text-gray-500 leading-relaxed text-sm mb-8">{service.desc}</p>
                 <button 
-                  onClick={() => setSelectedService(i)}
+                  onClick={() => { setSelectedService(i); setIsSuccess(false); }}
                   className="text-[10px] font-black uppercase tracking-widest text-[#7A2318] flex items-center gap-2 group-hover:gap-4 transition-all"
                 >
-                  Read More <span>→</span>
+                  Configure Service <span>→</span>
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* --- SERVICE DETAIL OVERLAY --- */}
+        {/* --- SERVICE OVERLAY --- */}
         {selectedService !== null && (
-          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 md:p-12 transition-all duration-500">
+          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-12 transition-all duration-500 overflow-y-auto">
             <div 
-              className="absolute inset-0 bg-black/80 backdrop-blur-xl animate-fade-in cursor-pointer"
+              className="fixed inset-0 bg-[#0A0A0A]/95 backdrop-blur-2xl animate-fade-in cursor-pointer"
               onClick={() => setSelectedService(null)}
             ></div>
             
-            <div className="relative bg-white w-full max-w-2xl rounded-[60px] p-10 md:p-16 shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden animate-slide-up border border-white/20">
-              <div className="absolute -top-10 -right-10 text-[200px] font-black text-gray-50 pointer-events-none select-none">
-                0{selectedService + 1}
-              </div>
+            <div className="relative w-full max-w-5xl">
+              <div className="bg-white rounded-[60px] shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col lg:flex-row border border-white/20 animate-slide-up">
+                {/* LEFT: INFORMATION LAYER */}
+                <div className="lg:w-1/2 p-10 md:p-16 relative bg-gray-50 overflow-hidden">
+                  <div className="absolute -top-20 -left-20 text-[250px] font-black text-gray-200/50 pointer-events-none select-none">
+                    0{selectedService + 1}
+                  </div>
 
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-10">
-                  <div className="text-6xl">{services[selectedService].icon}</div>
-                  <button 
-                    onClick={() => setSelectedService(null)}
-                    className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-[#7A2318] hover:text-white transition-all group"
-                  >
-                    <span className="text-2xl group-hover:rotate-90 transition-transform">×</span>
-                  </button>
+                  <div className="relative z-10 space-y-8">
+                    <div className="flex items-center justify-between">
+                      <div className="w-20 h-20 bg-white rounded-3xl shadow-xl flex items-center justify-center text-5xl">
+                        {services[selectedService].icon}
+                      </div>
+                      <button 
+                        onClick={() => setSelectedService(null)}
+                        className="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-[#7A2318] hover:text-white transition-all shadow-md group"
+                      >
+                        <span className="text-2xl group-hover:rotate-90 transition-transform">×</span>
+                      </button>
+                    </div>
+
+                    <div>
+                      <h3 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter uppercase leading-none">
+                        {services[selectedService].title}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Consultation Tier</span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-gray-600 text-lg leading-relaxed font-light">
+                      {services[selectedService].longDesc}
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {services[selectedService].details.map((detail, idx) => (
+                        <div key={idx} className="flex items-center gap-3 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+                          <div className="w-2 h-2 rounded-full bg-[#7A2318]"></div>
+                          <span className="text-xs font-bold text-gray-700">{detail}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                <h3 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 tracking-tighter">
-                  {services[selectedService].title}
-                </h3>
-                
-                <p className="text-gray-600 text-lg leading-relaxed mb-10 font-medium">
-                  {services[selectedService].longDesc}
-                </p>
+                {/* RIGHT: INTERACTIVE REQUEST FORM LAYER */}
+                <div className="lg:w-1/2 p-10 md:p-16 bg-white flex flex-col justify-center border-l border-gray-100 relative">
+                  {isSuccess ? (
+                    <div className="text-center space-y-6 animate-reveal">
+                      <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto text-[#7A2318] text-3xl font-bold">✓</div>
+                      <h3 className="text-3xl font-black text-gray-900 tracking-tight">Request Logged</h3>
+                      <p className="text-gray-500 font-light">Your intelligence briefing regarding {services[selectedService].title} will be prepared immediately.</p>
+                      <button 
+                        onClick={() => setSelectedService(null)}
+                        className="bg-black text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px]"
+                      >
+                        Return to Dashboard
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-10">
+                      <div>
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight">Secure Service Portal</h4>
+                        <p className="text-gray-400 text-sm font-light mt-2 italic">Fill out the encrypted form to initialize this service.</p>
+                      </div>
 
-                <div className="space-y-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#7A2318]">Service Pillars</h4>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {services[selectedService].details.map((detail, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-sm font-bold text-gray-500 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#7A2318] group-hover:scale-150 transition-transform"></span>
-                        {detail}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                      <form onSubmit={handleServiceRequest} className="space-y-4">
+                        <div className="group">
+                          <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">Full Identity</label>
+                          <input 
+                            required
+                            type="text" 
+                            placeholder="Your Name"
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            className="w-full bg-gray-50 px-6 py-4 rounded-2xl outline-none border-2 border-transparent focus:border-[#7A2318] focus:bg-white transition-all text-sm font-medium" 
+                          />
+                        </div>
+                        <div className="group">
+                          <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">Secure Email</label>
+                          <input 
+                            required
+                            type="email" 
+                            placeholder="contact@identity.com"
+                            value={formData.email}
+                            onChange={(e) => setFormData({...formData, email: e.target.value})}
+                            className="w-full bg-gray-50 px-6 py-4 rounded-2xl outline-none border-2 border-transparent focus:border-[#7A2318] focus:bg-white transition-all text-sm font-medium" 
+                          />
+                        </div>
+                        <div className="group">
+                          <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">Additional Parameters (Optional)</label>
+                          <textarea 
+                            rows={3}
+                            placeholder="Specific requirements or timelines..."
+                            value={formData.details}
+                            onChange={(e) => setFormData({...formData, details: e.target.value})}
+                            className="w-full bg-gray-50 px-6 py-4 rounded-2xl outline-none border-2 border-transparent focus:border-[#7A2318] focus:bg-white transition-all text-sm font-medium resize-none" 
+                          ></textarea>
+                        </div>
+                        
+                        <button 
+                          disabled={isSubmitting}
+                          className="w-full bg-[#7A2318] text-white py-6 rounded-3xl font-black uppercase tracking-[0.4em] text-[10px] shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95"
+                        >
+                          {isSubmitting ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          ) : "Establish Secure Link"}
+                        </button>
+                      </form>
 
-                <div className="mt-12 flex gap-4">
-                  <Link 
-                    to="/contact" 
-                    onClick={() => setSelectedService(null)}
-                    className="bg-[#7A2318] text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#5a1a12] transition-all"
-                  >
-                    Consult an Advisor
-                  </Link>
-                  <button 
-                    onClick={() => setSelectedService(null)}
-                    className="px-8 py-4 border-2 border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all"
-                  >
-                    Close
-                  </button>
+                      <div className="flex items-center justify-center gap-2 opacity-30">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span className="text-[8px] font-black uppercase tracking-widest">256-Bit SSL End-to-End Encryption</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -282,8 +380,12 @@ const Home: React.FC = () => {
           to { opacity: 1; }
         }
         @keyframes slideUp {
-          from { transform: translateY(50px) scale(0.95); opacity: 0; }
+          from { transform: translateY(100px) scale(0.9); opacity: 0; }
           to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes reveal {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
         }
         @keyframes marquee {
           0% { transform: translateX(0); }
@@ -293,7 +395,10 @@ const Home: React.FC = () => {
           animation: fadeIn 0.4s ease-out forwards;
         }
         .animate-slide-up {
-          animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-reveal {
+          animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-marquee {
           animation: marquee 30s linear infinite;

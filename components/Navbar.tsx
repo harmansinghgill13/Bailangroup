@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import Logo from './Logo';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,22 +34,8 @@ const Navbar: React.FC = () => {
   return (
     <header className={`fixed top-0 left-0 w-full z-[1000] transition-all duration-500 px-[6%] py-4 flex items-center justify-between ${isScrolled ? 'bg-white shadow-lg' : 'bg-transparent'}`}>
       {/* BRAND LOGO */}
-      <Link to="/" className="flex flex-col items-center group">
-        <div className="relative flex flex-col items-center leading-none">
-          <div className="flex flex-col items-center -mb-1">
-            <svg width="40" height="20" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform group-hover:scale-110">
-              <path d="M2 18 L20 2 L38 18" stroke={useWhiteText ? "#FFFFFF" : "#4F545A"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="18" y="10" width="4" height="4" fill="#7A2318" />
-            </svg>
-          </div>
-          <div className="flex items-baseline gap-0.5">
-            <span className={`text-xl font-black tracking-tighter transition-colors ${useWhiteText ? 'text-white' : 'text-[#4F545A]'}`}>BAI</span>
-            <span className="text-xl font-black text-[#7A2318] tracking-tighter">LAN</span>
-          </div>
-          <div className={`text-[7px] font-bold tracking-[0.4em] uppercase mt-0.5 transition-colors ${useWhiteText ? 'text-white/60' : 'text-[#4F545A]'}`}>
-            GROUP
-          </div>
-        </div>
+      <Link to="/">
+        <Logo mode={useWhiteText ? 'white' : 'dark'} size="md" />
       </Link>
 
       {/* DESKTOP NAV */}
