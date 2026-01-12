@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -48,7 +47,7 @@ const Footer: React.FC = () => {
             <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Terms of Use</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Compliance</a></li>
-            <li><Link to="/admin" className="hover:text-white transition-colors">Management Portal</Link></li>
+            <li><a href="#" className="hover:text-white transition-colors opacity-10 cursor-default">Security Standards</a></li>
           </ul>
         </div>
 

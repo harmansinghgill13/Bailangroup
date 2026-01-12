@@ -1,12 +1,16 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { PROJECTS } from '../constants/projects.ts';
+import { PROJECTS } from '../constants/projects';
+import { inquiryService } from '../services/inquiryService';
 
 const ProjectDetail: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const project = PROJECTS.find(p => p.id === projectId);
+
+  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -14,6 +18,26 @@ const ProjectDetail: React.FC = () => {
       navigate('/projects');
     }
   }, [project, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await inquiryService.saveInquiry({
+        firstName: formData.name,
+        lastName: `(Viewing Request: ${project?.title})`,
+        email: formData.email,
+        type: 'Property Viewing',
+        message: `Automatic request for a private tour of ${project?.title} in ${project?.location}.`
+      });
+      setIsSuccess(true);
+      setFormData({ name: '', email: '' });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!project) return null;
 
@@ -47,7 +71,6 @@ const ProjectDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Scroll Indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4">
            <div className="w-[1px] h-20 bg-gradient-to-b from-white to-transparent"></div>
         </div>
@@ -87,7 +110,6 @@ const ProjectDetail: React.FC = () => {
       {/* --- CONTENT SECTION --- */}
       <section className="py-32 px-[6%] max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-          {/* Narrative */}
           <div className="lg:col-span-7 space-y-12">
             <div className="space-y-6">
               <span className="text-[#7A2318] font-black uppercase tracking-[0.4em] text-[10px]">Architectural Narrative</span>
@@ -111,20 +133,56 @@ const ProjectDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Sidebar / Quick Actions */}
           <div className="lg:col-span-5">
-            <div className="bg-gray-50 rounded-[50px] p-12 space-y-10">
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">Viewing Request</h3>
-              <p className="text-gray-500 text-sm font-light">
-                Bailan Group offers private, confidential viewings for this property by appointment only.
-              </p>
-              <form className="space-y-4">
-                <input type="text" placeholder="Full Name" className="w-full bg-white px-6 py-4 rounded-2xl outline-none border border-transparent focus:border-[#7A2318] transition-all text-sm" />
-                <input type="email" placeholder="Email Address" className="w-full bg-white px-6 py-4 rounded-2xl outline-none border border-transparent focus:border-[#7A2318] transition-all text-sm" />
-                <button className="w-full bg-black text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#7A2318] transition-all">
-                  Request Private Tour
-                </button>
-              </form>
+            <div className="bg-gray-50 rounded-[50px] p-12 space-y-10 relative overflow-hidden">
+              {isSuccess ? (
+                <div className="text-center py-10 animate-reveal">
+                  <div className="text-5xl mb-6">✨</div>
+                  <h3 className="text-2xl font-black text-gray-900 mb-4 tracking-tight">Request Logged</h3>
+                  <p className="text-gray-500 text-sm font-light mb-8">Your private viewing request has been sent to our desk.</p>
+                  <button onClick={() => setIsSuccess(false)} className="text-[9px] font-black uppercase tracking-widest text-[#7A2318]">New Request</button>
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-black text-gray-900 tracking-tight">Viewing Request</h3>
+                  <p className="text-gray-500 text-sm font-light">
+                    Bailan Group offers private, confidential viewings for this property by appointment only.
+                  </p>
+                  <form className="space-y-4" onSubmit={handleSubmit}>
+                    <input 
+                      required
+                      type="text" 
+                      placeholder="Full Name" 
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      className="w-full bg-white px-6 py-4 rounded-2xl outline-none border border-transparent focus:border-[#7A2318] transition-all text-sm" 
+                    />
+                    <input 
+                      required
+                      type="email" 
+                      placeholder="Email Address" 
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full bg-white px-6 py-4 rounded-2xl outline-none border border-transparent focus:border-[#7A2318] transition-all text-sm" 
+                    />
+                    <button 
+                      disabled={isSubmitting}
+                      className="w-full bg-black text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#7A2318] transition-all flex items-center justify-center gap-3"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                          Processing...
+                        </>
+                      ) : "Request Private Tour"}
+                    </button>
+                    <div className="flex items-center justify-center gap-2 opacity-30 mt-4">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                      <span className="text-[8px] font-black uppercase tracking-widest">End-to-End Encrypted Connection</span>
+                    </div>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         </div>
