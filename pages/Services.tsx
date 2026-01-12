@@ -4,7 +4,7 @@ import React from 'react';
 const Services: React.FC = () => {
   const servicesList = [
     { title: "Property Appraisal", desc: "Accurate market valuations for your assets.", img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800" },
-    { title: "Investment Strategy", desc: "Expert advice on high-yield real estate portfolios.", img: "https://images.unsplash.com/photo-1454165833767-1390e70c600a?q=80&w=800" },
+    { title: "Investment Strategy", desc: "Expert advice on high-yield real estate portfolios.", img: "https://images.pexels.com/photos/35501871/pexels-photo-35501871.jpeg" },
     { title: "Global Sales", desc: "Seamless cross-border property transactions.", img: "https://images.unsplash.com/photo-1582408921715-18e7806365c1?q=80&w=800" },
     { title: "Luxury Rentals", desc: "Find short-term and long-term premium stays.", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800" },
     { title: "Interior Consulting", desc: "Transform your space with elite designers.", img: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800" },

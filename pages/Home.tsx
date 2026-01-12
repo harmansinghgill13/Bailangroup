@@ -96,7 +96,7 @@ const Home: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="group relative h-[600px] rounded-[50px] overflow-hidden shadow-2xl">
-            <img src="https://images.unsplash.com/photo-1600607687940-477a4a4b0b73?q=80&w=1200" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+            <img src="https://images.pexels.com/photos/1481105/pexels-photo-1481105.jpeg" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-12 flex flex-col justify-end">
               <span className="text-white/60 text-xs font-black uppercase tracking-[0.3em] mb-2">New Entry</span>
               <h3 className="text-white text-4xl font-black mb-4">The Obsidian Manor</h3>
