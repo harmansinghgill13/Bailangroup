@@ -1,0 +1,8 @@
+
+{
+  "name": "Bailan Group Real Estate",
+  "description": "Exquisite real estate solutions by Bailan Group. A premium, modern platform for architectural masterpieces and investment opportunities.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
