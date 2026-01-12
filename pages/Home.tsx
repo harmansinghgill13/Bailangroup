@@ -28,7 +28,6 @@ const Home: React.FC = () => {
     }
   ];
 
-  // Placeholder for brand logos - replace these strings with your actual logo SVG/PNG paths
   const partners = [
     "ROLEX", "RITZ-CARLTON", "SOTHEBY'S", "GULFSTREAM", "ASTON MARTIN", "NETJETS", "BENTLEY", "FOUR SEASONS"
   ];
@@ -44,7 +43,7 @@ const Home: React.FC = () => {
             muted 
             playsInline 
             className="w-full h-full object-cover"
-            src="public/videos/1.mp4"
+            src="/videos/1.mp4"
           />
           <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
         </div>
@@ -160,15 +159,12 @@ const Home: React.FC = () => {
         {/* --- SERVICE DETAIL OVERLAY --- */}
         {selectedService !== null && (
           <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 md:p-12 transition-all duration-500">
-            {/* Dark Blur Backdrop */}
             <div 
               className="absolute inset-0 bg-black/80 backdrop-blur-xl animate-fade-in cursor-pointer"
               onClick={() => setSelectedService(null)}
             ></div>
             
-            {/* Detail Panel */}
             <div className="relative bg-white w-full max-w-2xl rounded-[60px] p-10 md:p-16 shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden animate-slide-up border border-white/20">
-              {/* Decorative background number */}
               <div className="absolute -top-10 -right-10 text-[200px] font-black text-gray-50 pointer-events-none select-none">
                 0{selectedService + 1}
               </div>
@@ -234,13 +230,11 @@ const Home: React.FC = () => {
         
         <div className="relative flex overflow-x-hidden">
           <div className="animate-marquee whitespace-nowrap flex items-center gap-24 py-4">
-            {/* First set of logos */}
             {partners.map((partner, i) => (
               <span key={i} className="text-4xl md:text-5xl font-black text-gray-200 hover:text-[#7A2318] transition-colors cursor-default tracking-widest">
                 {partner}
               </span>
             ))}
-            {/* Identical second set for seamless looping */}
             {partners.map((partner, i) => (
               <span key={`dup-${i}`} className="text-4xl md:text-5xl font-black text-gray-200 hover:text-[#7A2318] transition-colors cursor-default tracking-widest">
                 {partner}
