@@ -1,9 +1,16 @@
 
 import { Inquiry } from '../types/inquiry';
 
-// In production, we use the same domain. In development, we use localhost:5000
-const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-const API_URL = isProduction ? '/api/inquiries' : 'http://localhost:5000/api/inquiries';
+/**
+ * ---------------------------------------------------------
+ * CONFIGURATION: GOOGLE SHEETS INTEGRATION
+ * 1. Open your Google Sheet
+ * 2. Extensions > Apps Script > Paste the "Master Script"
+ * 3. Deploy > New Deployment > Web App > Access: "Anyone"
+ * 4. Paste the URL below:
+ * ---------------------------------------------------------
+ */
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxMUl6je_QA5MDDKuNbxIsfk5in2laxZl1YkPqPYCUXSjFiivn3CSyPfXcKJ35zTAZt/exec';
 
 const LOCAL_STORAGE_KEY = 'bailan_group_inquiries';
 
@@ -19,53 +26,42 @@ const saveLocalInquiry = (inquiry: Inquiry) => {
 
 export const inquiryService = {
   saveInquiry: async (data: Omit<Inquiry, 'id' | 'timestamp'>): Promise<Inquiry> => {
-    const tempId = Math.random().toString(36).substr(2, 9);
+    const tempId = 'BLN-' + Math.random().toString(36).substr(2, 6).toUpperCase();
     const timestamp = Date.now();
     const fullInquiry: Inquiry = { ...data, id: tempId, timestamp };
 
+    // 1. Save locally for the device owner (Browser History)
+    saveLocalInquiry(fullInquiry);
+
+    // 2. Transmit to Google Sheet
     try {
-      const response = await fetch(API_URL, {
+      // We use 'no-cors' mode because Google Apps Script redirects can trigger CORS errors in browsers.
+      // 'no-cors' will still send the data successfully to the sheet.
+      await fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        mode: 'no-cors', 
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(fullInquiry),
       });
       
-      if (!response.ok) throw new Error('Backend failed');
-      return response.json();
+      console.log(`Vault Synced: ${tempId} has been pushed to Google Sheet.`);
+      return fullInquiry;
     } catch (err) {
-      console.warn("Backend offline. Saving lead to browser storage.");
-      saveLocalInquiry(fullInquiry);
+      console.error("Vault Sync Error:", err);
       return fullInquiry;
     }
   },
 
   getAllInquiries: async (): Promise<Inquiry[]> => {
-    let serverInquiries: Inquiry[] = [];
-    try {
-      const response = await fetch(API_URL);
-      if (response.ok) {
-        serverInquiries = await response.json();
-      }
-    } catch (error) {
-      console.error("Backend offline. Loading local data only.");
-    }
-
+    // Returns local history for the Admin panel on this device
     const localInquiries = getLocalInquiries();
-    const all = [...serverInquiries, ...localInquiries];
-    // Filter duplicates by ID
-    const unique = Array.from(new Map(all.map(item => [item.id, item])).values());
-    return unique.sort((a, b) => b.timestamp - a.timestamp);
+    return localInquiries.sort((a, b) => b.timestamp - a.timestamp);
   },
 
   deleteInquiry: async (id: string): Promise<void> => {
-    try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Server delete failed');
-    } catch (err) {
-      const local = getLocalInquiries();
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local.filter(i => i.id !== id)));
-    }
+    const local = getLocalInquiries();
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local.filter(i => i.id !== id)));
   }
 };
