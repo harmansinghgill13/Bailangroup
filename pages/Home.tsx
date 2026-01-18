@@ -60,7 +60,14 @@ const Home: React.FC = () => {
       {/* --- HERO SECTION --- */}
       <section className="relative min-h-screen flex items-center px-6 md:px-[8%] pt-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <video autoPlay loop muted playsInline className="w-full h-full object-cover" src="/videos/1.mp4" />
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover" 
+            src="videos/1.mp4" 
+          />
           <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 max-w-4xl w-full">
@@ -116,12 +123,14 @@ const Home: React.FC = () => {
                 />
               )}
               
-              <div className="absolute top-8 right-8 z-20">
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7A2318] animate-pulse"></div>
-                  <span className="text-white text-[8px] font-black tracking-[0.3em] uppercase">Cinematic Preview</span>
+              {vanbagh.mainVideo && (
+                <div className="absolute top-8 right-8 z-20">
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#7A2318] animate-pulse"></div>
+                    <span className="text-white text-[8px] font-black tracking-[0.3em] uppercase">Cinematic Preview</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent p-8 md:p-12 flex flex-col justify-end z-10">
                 <span className="text-[#7A2318] font-black uppercase tracking-[0.4em] text-[10px] mb-2">Prime Acquisition</span>
