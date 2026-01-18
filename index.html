@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,9 +18,34 @@
             font-family: 'Poppins', sans-serif;
             scroll-behavior: smooth;
             margin: 0;
+            letter-spacing: 0.03em; /* Optimized global character spacing */
+            color: #1a1a1a;
+            overflow-x: hidden;
         }
         .playfair {
             font-family: 'Playfair Display', serif;
+        }
+        /* Mandatory 64px Desktop Headings */
+        h1, h2, .section-heading {
+            font-size: 64px !important;
+            line-height: 1.1;
+            letter-spacing: 0.02em !important;
+            font-weight: 900;
+        }
+        /* Mobile Fluid Headings */
+        @media (max-width: 1024px) {
+            h1, h2, .section-heading {
+                font-size: 48px !important;
+            }
+        }
+        @media (max-width: 768px) {
+            h1, h2, .section-heading {
+                font-size: 38px !important;
+            }
+        }
+        /* Premium tracking for small labels */
+        .tracking-premium {
+            letter-spacing: 0.4em !important;
         }
         /* Custom swiper styles */
         .swiper-pagination-bullet-active {
@@ -31,9 +57,6 @@
         }
         .rotate-badge {
             animation: rotate-slow 15s linear infinite;
-        }
-        .text-charcoal {
-            color: var(--charcoal);
         }
     </style>
 <script type="importmap">
@@ -50,7 +73,8 @@
     "path": "https://esm.sh/path@^0.12.7",
     "url": "https://esm.sh/url@^0.11.4",
     "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "nodemailer": "https://esm.sh/nodemailer@^7.0.12"
   }
 }
 </script>
